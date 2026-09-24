@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Скачать видео</title>
+    <title>Загрузчик видео</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -14,35 +14,85 @@
         }
         input[type="text"] {
             width: 80%;
-            padding: 10px;
+            max-width: 500px;
+            padding: 12px;
             margin-bottom: 20px;
             border: 1px solid #333;
-            border-radius: 4px;
+            border-radius: 6px;
             background-color: #1e1e1e;
             color: #ffffff;
+            font-size: 16px;
         }
         button {
-            padding: 10px 20px;
+            padding: 12px 24px;
             border: none;
-            border-radius: 4px;
+            border-radius: 6px;
             background-color: #00fff0;
             color: #000;
             cursor: pointer;
             font-size: 16px;
+            font-weight: bold;
+        }
+        #result {
+            margin-top: 25px;
+            font-size: 18px;
+            word-break: break-all;
+        }
+        a.download-link {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
         }
     </style>
 </head>
 <body>
     <h1>Загрузчик видео</h1>
-    <p>Вставь ссылку сюда:</p>
+    <p>Вставь ссылку сюда (YouTube, TikTok, Instagram и др.):</p>
     <input type="text" id="videoUrl" placeholder="https://...">
     <br>
     <button onclick="downloadVideo()">Скачать</button>
 
+    <div id="result"></div>
+
     <script>
-        function downloadVideo() {
-            var url = document.getElementById("videoUrl").value;
-            alert("Ссылка для скачивания: " + url);
+        async function downloadVideo() {
+            const urlInput = document.getElementById("videoUrl").value.trim();
+            const resultDiv = document.getElementById("result");
+
+            if (!urlInput) {
+                resultDiv.innerHTML = "<p style='color: red;'>Пожалуйста, вставьте ссылку!</p>";
+                return;
+            }
+
+            resultDiv.innerHTML = "<p style='color: #00fff0;'>Ищем видео, подождите...</p>";
+
+            try {
+                // Запрос к бесплатному публичному API скачивания
+                const response = await fetch(`https://api.cobalt.tools/api/json`, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ url: urlInput })
+                });
+
+                const data = await response.json();
+
+                if (data.url) {
+                    resultDiv.innerHTML = `<a class="download-link" href="${data.url}" target="_blank" download>Нажмите здесь, чтобы скачать видео</a>`;
+                } else if (data.picker) {
+                    resultDiv.innerHTML = `<a class="download-link" href="${data.picker[0].url}" target="_blank" download>Скачать видео</a>`;
+                } else {
+                    resultDiv.innerHTML = "<p style='color: red;'>Не удалось получить ссылку на видео. Проверьте ссылку.</p>";
+                }
+            } catch (error) {
+                resultDiv.innerHTML = "<p style='color: red;'>Ошибка при загрузке. Попробуйте позже.</p>";
+            }
         }
     </script>
 </body>
