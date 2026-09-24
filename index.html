@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Мой сайт</title>
+    <title>Скачать видео</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -12,11 +12,38 @@
             text-align: center;
             padding: 50px 20px;
         }
-        h1 { color: #00fff0; }
+        input[type="text"] {
+            width: 80%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #333;
+            border-radius: 4px;
+            background-color: #1e1e1e;
+            color: #ffffff;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            background-color: #00fff0;
+            color: #000;
+            cursor: pointer;
+            font-size: 16px;
+        }
     </style>
 </head>
 <body>
-    <h1>Привет! Это мой сайт.</h1>
-    <p>Сайт создан прямо с телефона через GitHub Pages.</p>
+    <h1>Загрузчик видео</h1>
+    <p>Вставь ссылку сюда:</p>
+    <input type="text" id="videoUrl" placeholder="https://...">
+    <br>
+    <button onclick="downloadVideo()">Скачать</button>
+
+    <script>
+        function downloadVideo() {
+            var url = document.getElementById("videoUrl").value;
+            alert("Ссылка для скачивания: " + url);
+        }
+    </script>
 </body>
 </html>
