@@ -82,7 +82,7 @@
     <input type="text" id="linkInput" placeholder="Вставьте ссылку на ролик...">
     <button id="actionBtn" onclick="processVideo()">Скачать</button>
 
-    <div class="status" id="statusMessage">Ищем видео на сервере, подождите...</div>
+    <div class="status" id="statusMessage">Ищем видео на сервере...</div>
     
     <div class="result-box" id="successBlock">
         <span style="color: #4ef0a5; font-weight: 600; display: block;">Видео успешно найдено!</span>
@@ -91,6 +91,13 @@
 </div>
 
 <script>
+// Список доступных серверов-зеркал
+const apiEndpoints = [
+    'https://cobalt.tools',
+    'https://unblockninja.com',
+    'https://wuk.sh'
+];
+
 async function processVideo() {
     const inputField = document.getElementById('linkInput');
     const actionBtn = document.getElementById('actionBtn');
@@ -108,40 +115,44 @@ async function processVideo() {
     actionBtn.disabled = true;
     statusMsg.style.display = 'block';
     successBlock.style.display = 'none';
-    statusMsg.innerText = 'Подключаемся к стабильному серверу обработки...';
+    
+    let success = false;
 
-    try {
-        // Используем публичный и мощный шлюз Cobalt API
-        const response = await fetch('https://cobalt.tools', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify({
-                url: userUrl,
-                videoQuality: "720",
-                filenamePattern: "basic"
-            })
-        });
+    // Перебираем серверы по очереди, пока один не сработает
+    for (let i = 0; i < apiEndpoints.length; i++) {
+        statusMsg.innerText = `Пытаемся скачать через сервер ${i + 1}...`;
+        try {
+            const response = await fetch(apiEndpoints[i], {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    url: userUrl,
+                    videoQuality: "720"
+                })
+            });
 
-        const resultData = await response.json();
+            const resultData = await response.json();
 
-        if (resultData && resultData.url) {
-            downloadLink.href = resultData.url;
-            statusMsg.style.display = 'none';
-            successBlock.style.display = 'block';
-        } else if (resultData && resultData.text) {
-            statusMsg.innerHTML = '<span style="color:#ff4a4a;">Ошибка сервера: ' + resultData.text + '<br>Попробуйте другую ссылку.</span>';
-        } else {
-            statusMsg.innerHTML = '<span style="color:#ff4a4a;">Не удалось извлечь видео из этой ссылки.<br>Убедитесь, что это открытый ролик.</span>';
+            if (resultData && resultData.url) {
+                downloadLink.href = resultData.url;
+                statusMsg.style.display = 'none';
+                successBlock.style.display = 'block';
+                success = true;
+                break; // Выходим из цикла, так как видео найдено
+            }
+        } catch (err) {
+            console.log(`Сервер ${i + 1} временно недоступен, пробуем следующий...`);
         }
-    } catch (err) {
-        console.error(err);
-        statusMsg.innerHTML = '<span style="color:#ff4a4a;">Ошибка сети. Сервер временно перегружен.<br>Пожалуйста, нажмите «Скачать» еще раз через 10 секунд.</span>';
-    } finally {
-        actionBtn.disabled = false;
     }
+
+    if (!success) {
+        statusMsg.innerHTML = '<span style="color:#ff4a4a;">Все серверы сейчас перегружены.<br>Пожалуйста, попробуй нажать кнопку еще раз через 15 секунд!</span>';
+    }
+    
+    actionBtn.disabled = false;
 }
 </script>
 
